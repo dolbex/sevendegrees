@@ -9,8 +9,9 @@
 import UIKit
 import Foundation
 
-class MoodButton: UIButton {
+class NavigationButton: UIButton {
     
     var mood:String?
+    var action: String?
     
 }

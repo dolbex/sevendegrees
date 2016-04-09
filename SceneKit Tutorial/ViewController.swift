@@ -47,11 +47,15 @@ class ViewController: UIViewController {
     var fakeData:Array<Stat> = []
     var barNodes:Array<SCNNode> = []
     var avgBarNodes:Array<SCNNode> = []
+    var pointNodes:Array<SCNNode> = []
+    var avgPointNodes:Array<SCNNode> = []
     
     let controlBooth = UIView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        buildFakeData()
         
         buildMasterView()
         
@@ -61,8 +65,6 @@ class ViewController: UIViewController {
         
         buildGalaxy()
         
-        buildFakeData()
-        
         buildCamera()
         
         buildFloor()
@@ -70,6 +72,9 @@ class ViewController: UIViewController {
         buildAmbientLights()
         
         buildControls()
+        
+        
+        
     }
     
     override func shouldAutorotate() -> Bool {
@@ -98,11 +103,11 @@ class ViewController: UIViewController {
         sceneView.autoenablesDefaultLighting = false
         sceneView.allowsCameraControl = true
         sceneView.showsStatistics = true
+        
+
     }
     
     func buildVideo() {
-        
-        print(NSBundle.mainBundle())
         
         let videoURL: NSURL = NSBundle.mainBundle().URLForResource("h5-announcement", withExtension: "mp4")!
         
@@ -157,7 +162,7 @@ class ViewController: UIViewController {
     
     func buildGalaxy() {
         // Build Galaxy
-        universeNode.position = SCNVector3(x: 20.0, y: 0.0, z: 4.0)
+        universeNode.position = SCNVector3(x: 0.0, y: 0.0, z: 4.0)
         sceneView.scene?.rootNode.addChildNode(universeNode)
         
         buildSun()
@@ -243,7 +248,12 @@ class ViewController: UIViewController {
         }
     }
     
-    func buildGraph(data: Array<Stat>) {
+    func hideAllCharts() {
+        hideBarChart()
+        hideLineChart()
+    }
+    
+    func buildBarChart(data: Array<Stat>) {
         
         for i in 0..<data.count {
             
@@ -291,7 +301,7 @@ class ViewController: UIViewController {
         SCNTransaction.commit()
     }
     
-    func hideGraph() {
+    func hideBarChart() {
         SCNTransaction.begin()
         SCNTransaction.setAnimationDuration(1.0)
         
@@ -310,12 +320,130 @@ class ViewController: UIViewController {
         }
         
         SCNTransaction.setCompletionBlock {
-            print("done")
+            for node in self.barNodes {
+                node.removeFromParentNode()
+            }
+            
+            for node in self.avgBarNodes {
+                node.removeFromParentNode()
+            }
+            
+            self.barNodes = []
+            self.avgBarNodes = []
         }
         
         SCNTransaction.commit()
+    }
+    
+    func buildLineChart(data: Array<Stat>) {
+        for i in 0..<data.count {
+            
+            let point = SCNSphere(radius: 0.5)
+            let avgPoint = SCNSphere(radius: 0.2)
+            point.firstMaterial?.diffuse.contents = UIColor.lightGrayColor()
+            avgPoint.firstMaterial?.diffuse.contents = UIColor.redColor()
+            
+            let pointNode = SCNNode(geometry: point)
+            let avgPointNode = SCNNode(geometry: avgPoint)
+            pointNode.position = SCNVector3(x: Float(i) * globals.lineGraphPointMargin, y:-Float(maximumCircumference) - 0.6, z:0.0)
+            avgPointNode.position = SCNVector3(x: (Float(i) * globals.lineGraphPointMargin) + 0.2, y:-Float(maximumCircumference) - 0.6, z:1.0)
+            
+            currentGraph.addChildNode(pointNode)
+            currentGraph.addChildNode(avgPointNode)
+            
+            pointNodes.append(pointNode)
+            avgPointNodes.append(avgPointNode)
+        }
+        
+        // Add the line
+        let line = SCNShape(path: buildLinePath(), extrusionDepth: 0.1)
+        line.firstMaterial?.diffuse.contents = UIColor.grayColor()
+        let lineNode = SCNNode(geometry: line)
+        lineNode.position = SCNVector3Make(0, 0, 0)
+        currentGraph.addChildNode(lineNode)
+        
+        // Position and Add the Graph
+        currentGraph.position = SCNVector3(x:-30, y:-Float(maximumCircumference) - 0.8, z:centerOfTheUniverse.z - (Float(maximumCircumference) / 2))
+        sceneView.scene!.rootNode.addChildNode(currentGraph)
         
         
+        SCNTransaction.begin()
+        SCNTransaction.setAnimationDuration(1.0)
+        
+        for i in 0..<data.count {
+            let height = data[i].amount
+            let avgHeight = data[i].average
+            
+            let amountNode = pointNodes[i]
+            let avgNode = avgPointNodes[i]
+            
+//            let point = amountNode.geometry as! SCNSphere
+//            let avgPoint = avgNode.geometry as! SCNSphere
+            
+            amountNode.position.y = height / 2
+            avgNode.position.y = avgHeight / 2
+        }
+        
+        SCNTransaction.commit()
+    }
+    
+    func hideLineChart() {
+        SCNTransaction.begin()
+        SCNTransaction.setAnimationDuration(1.0)
+        
+        for node in pointNodes {
+            if let geo = node.geometry as? SCNSphere {
+                geo.radius = 0
+            }
+            node.position.y = 0
+        }
+        
+        for node in avgPointNodes {
+            if let geo = node.geometry as? SCNSphere {
+                geo.radius = 0
+            }
+            node.position.y = 0
+        }
+        
+        SCNTransaction.setCompletionBlock {
+            for node in self.pointNodes {
+                node.removeFromParentNode()
+            }
+            
+            for node in self.avgPointNodes {
+                node.removeFromParentNode()
+            }
+            
+            self.pointNodes = []
+            self.avgPointNodes = []
+        }
+        
+        SCNTransaction.commit()
+    }
+    
+    func buildLinePath() -> UIBezierPath {
+        
+        let path = UIBezierPath()
+        
+        var interpolationPoints : [CGPoint] = [CGPoint]()
+        
+        for i in 0..<fakeData.count {
+            let pathPointX = i * Int(globals.lineGraphPointMargin)
+            let pathPointY = fakeData[i].amount
+            
+            interpolationPoints.append(CGPoint(x: pathPointX,y: Int(pathPointY)))
+        }
+        
+        for i in (0..<fakeData.count).reverse() {
+            let pathPointX = i * Int(globals.lineGraphPointMargin)
+            let pathPointY = (fakeData[i].amount - 2)
+            
+            interpolationPoints.append(CGPoint(x: pathPointX,y: Int(pathPointY)))
+        }
+        
+        path.interpolatePointsWithHermite(interpolationPoints)
+        
+        return path
     }
     
 
@@ -389,13 +517,10 @@ class ViewController: UIViewController {
             currentUniverseYAngle = newAngleY
         }
         
-        // Rotate Graph
-        newAngleY += currentGraphYAngle
-        
-        currentGraph.eulerAngles.y = newAngleY
-        
-        if(sender.state == UIGestureRecognizerState.Ended) {
-            currentGraphYAngle = newAngleY
+        // Pan Graph
+        print(currentGraph.position.x, translation.x)
+        if ((currentGraph.position.x > -50 && translation.x < 0) || (currentGraph.position.x < 20 && translation.x > 0)) {
+            currentGraph.position.x += Float(translation.x * 0.01)
         }
     }
     
@@ -475,35 +600,56 @@ class ViewController: UIViewController {
     }
     
     
-    func changeMood(sender: MoodButton) {
+    func navigate(sender: NavigationButton) {
         
         if let mood = sender.mood {
-            var mainColor = UIColor.whiteColor()
-            var sunColor = UIColor.whiteColor()
-            var moodColor = UIColor.blackColor()
-            
-            if mood == "bad" {
-                mainColor = UIColor.darkGrayColor()
-                sunColor = UIColor.redColor()
-                moodColor = UIColor.redColor()
-                
-                buildGraph(fakeData)
-            } else if mood == "good" {
-                hideGraph()
-            }
-            
-            SCNTransaction.begin()
-            SCNTransaction.setAnimationDuration(0.5)
-                cameraNode.position = startingCameraPosition
-                mainAmbientLight.color = mainColor
-                sunLight.color = sunColor
-                sunParticleSystem.particleColor = sunColor
-            
-                moodAmbientLight.color = moodColor
-                moodAmbientLight.attenuationStartDistance = 500
-                moodAmbientLight.attenuationEndDistance = 500
-            SCNTransaction.commit()
+            setMood(mood)
         }
+        
+        if let action = sender.action {
+            runAction(action)
+        }
+    }
+    
+    func runAction(action:String) {
+        
+        
+        if action == "home" {
+            hideAllCharts()
+        } else if action == "barChart" {
+            buildBarChart(fakeData)
+        } else if action == "lineChart" {
+            buildLineChart(fakeData)
+        }
+    }
+    
+    func setMood(mood: String) {
+        var mainColor = UIColor.whiteColor()
+        var sunColor = UIColor.whiteColor()
+        var moodColor = UIColor.blackColor()
+        
+        if mood == "bad" {
+            mainColor = UIColor.darkGrayColor()
+            sunColor = UIColor.redColor()
+            moodColor = UIColor.redColor()
+
+        } else if mood == "good" {
+            mainColor = UIColor.whiteColor()
+            sunColor = UIColor.whiteColor()
+            moodColor = UIColor.blackColor()
+        }
+        
+        SCNTransaction.begin()
+        SCNTransaction.setAnimationDuration(0.5)
+        cameraNode.position = startingCameraPosition
+        mainAmbientLight.color = mainColor
+        sunLight.color = sunColor
+        sunParticleSystem.particleColor = sunColor
+        
+        moodAmbientLight.color = moodColor
+        moodAmbientLight.attenuationStartDistance = 500
+        moodAmbientLight.attenuationEndDistance = 500
+        SCNTransaction.commit()
     }
     
     func buildControls() {
@@ -520,34 +666,34 @@ class ViewController: UIViewController {
             controls.width == controls.superview!.width * 0.25
         }
         
-    
-        let matchesButton = Buttons.primaryButton("Matches", font: UIFont.systemFontOfSize(16, weight: UIFontWeightLight))
-        matchesButton.mood = "good"
-        matchesButton.addTarget(self, action: #selector(self.changeMood), forControlEvents: .TouchUpInside)
+        let shimView = UIView()
+        controlBooth.addSubview(shimView)
         
-        controlBooth.addSubview(matchesButton)
-        
-        constrain(matchesButton) { matches in
-            matches.left == matches.superview!.left
-            matches.right == matches.superview!.right
-            matches.height == globals.buttonHeight
+        constrain(shimView) { shim in
+            shim.top == shim.superview!.top
         }
         
+        let matchesButton = buildControl(shimView, title: "Home", mood: "good", action: "home")
+        let killsButton = buildControl(matchesButton, title: "Bar Graph", mood: "bad", action: "barChart")
+        let _ = buildControl(killsButton, title: "Line Graph", mood: "bad", action: "lineChart")
+    }
+    
+    func buildControl(previousEl: UIView, title: String, mood: String, action: String) -> UIButton {
+        let button = Buttons.primaryButton(title, font: UIFont.systemFontOfSize(16, weight: UIFontWeightLight))
+        button.mood = mood
+        button.action = action
+        button.addTarget(self, action: #selector(self.navigate), forControlEvents: .TouchUpInside)
         
-        let killsButton = Buttons.primaryButton("Kills", font: UIFont.systemFontOfSize(16, weight: UIFontWeightLight))
-        killsButton.mood = "bad"
-        killsButton.addTarget(self, action: #selector(self.changeMood), forControlEvents: .TouchUpInside)
+        controlBooth.addSubview(button)
         
-        controlBooth.addSubview(killsButton)
-        
-        constrain(matchesButton, killsButton) { previousEl, button in
+        constrain(previousEl, button) { previousEl, button in
             button.top == previousEl.bottom + 1
             button.left == button.superview!.left
             button.right == button.superview!.right
             button.height == globals.buttonHeight
         }
         
-
+        return button
     }
     
     override func didReceiveMemoryWarning() {

@@ -16,4 +16,7 @@ class Globals {
     // buttons
     let buttonHeight:CGFloat = 40
     
+    // Line graph
+    let lineGraphPointMargin:Float = 2
+    
 }

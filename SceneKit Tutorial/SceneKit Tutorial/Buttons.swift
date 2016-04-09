@@ -11,9 +11,9 @@ import Cartography
 
 class Buttons {
     
-    class func primaryButton(text: String, font: UIFont, alignment: String = "left") -> MoodButton
+    class func primaryButton(text: String, font: UIFont, alignment: String = "left") -> NavigationButton
     {
-        let button: MoodButton = MoodButton()
+        let button: NavigationButton = NavigationButton()
         
         button.setTitle(text.uppercaseString, forState: UIControlState.Normal)
         button.setTitleColor(UIColor.whiteColor(), forState: .Normal)

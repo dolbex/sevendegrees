@@ -19,7 +19,8 @@
 		9438059B1CB402D00085917E /* SceneKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9438059A1CB402D00085917E /* SceneKit.framework */; };
 		94637C9A1CB7322700FA06E6 /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94637C991CB7322700FA06E6 /* Globals.swift */; };
 		94637C9C1CB7351400FA06E6 /* Buttons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94637C9B1CB7351400FA06E6 /* Buttons.swift */; };
-		94637C9F1CB7396400FA06E6 /* MoodButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94637C9E1CB7396400FA06E6 /* MoodButton.swift */; };
+		94637C9F1CB7396400FA06E6 /* NavigationButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94637C9E1CB7396400FA06E6 /* NavigationButton.swift */; };
+		9474972D1CB89E86008C5AB2 /* UIBezierPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9474972C1CB89E86008C5AB2 /* UIBezierPath.swift */; };
 		94AB43C21CB405FB006EBDA6 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94AB43C11CB405FB006EBDA6 /* ViewController.swift */; };
 		94AB43C41CB4064A006EBDA6 /* PrimitivesScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94AB43C31CB4064A006EBDA6 /* PrimitivesScene.swift */; };
 		94BEE6C71CB6F82D0022EA5B /* Terrestrial1.png in Resources */ = {isa = PBXBuildFile; fileRef = 94BEE6C61CB6F82D0022EA5B /* Terrestrial1.png */; };
@@ -68,7 +69,8 @@
 		9438059A1CB402D00085917E /* SceneKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SceneKit.framework; path = System/Library/Frameworks/SceneKit.framework; sourceTree = SDKROOT; };
 		94637C991CB7322700FA06E6 /* Globals.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
 		94637C9B1CB7351400FA06E6 /* Buttons.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Buttons.swift; sourceTree = "<group>"; };
-		94637C9E1CB7396400FA06E6 /* MoodButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MoodButton.swift; sourceTree = "<group>"; };
+		94637C9E1CB7396400FA06E6 /* NavigationButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NavigationButton.swift; sourceTree = "<group>"; };
+		9474972C1CB89E86008C5AB2 /* UIBezierPath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIBezierPath.swift; sourceTree = "<group>"; };
 		94AB43C11CB405FB006EBDA6 /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ViewController.swift; path = ../ViewController.swift; sourceTree = "<group>"; };
 		94AB43C31CB4064A006EBDA6 /* PrimitivesScene.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PrimitivesScene.swift; sourceTree = "<group>"; };
 		94BEE6C61CB6F82D0022EA5B /* Terrestrial1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Terrestrial1.png; sourceTree = "<group>"; };
@@ -173,12 +175,12 @@
 				9438056C1CB402AA0085917E /* AppDelegate.swift */,
 				94AB43C11CB405FB006EBDA6 /* ViewController.swift */,
 				94AB43C31CB4064A006EBDA6 /* PrimitivesScene.swift */,
-				94C0D0F31CB4552B0091892D /* Int.swift */,
 				943805701CB402AA0085917E /* Main.storyboard */,
 				943805731CB402AA0085917E /* Assets.xcassets */,
 				943805751CB402AA0085917E /* LaunchScreen.storyboard */,
 				943805781CB402AA0085917E /* Info.plist */,
 				941570D41CB5699900C5A6F3 /* Assets */,
+				947497291CB89113008C5AB2 /* Extensions */,
 				94D265FB1CB743280091EDA6 /* Models */,
 				94637C9D1CB735BD00FA06E6 /* Globals */,
 				94C0D0FB1CB487F30091892D /* Particles */,
@@ -210,9 +212,18 @@
 			children = (
 				94637C991CB7322700FA06E6 /* Globals.swift */,
 				94637C9B1CB7351400FA06E6 /* Buttons.swift */,
-				94637C9E1CB7396400FA06E6 /* MoodButton.swift */,
+				94637C9E1CB7396400FA06E6 /* NavigationButton.swift */,
 			);
 			name = Globals;
+			sourceTree = "<group>";
+		};
+		947497291CB89113008C5AB2 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				94C0D0F31CB4552B0091892D /* Int.swift */,
+				9474972C1CB89E86008C5AB2 /* UIBezierPath.swift */,
+			);
+			name = Extensions;
 			sourceTree = "<group>";
 		};
 		94C0D0FB1CB487F30091892D /* Particles */ = {
@@ -423,7 +434,8 @@
 			files = (
 				94D266011CB7D38E0091EDA6 /* Stat.swift in Sources */,
 				94AB43C21CB405FB006EBDA6 /* ViewController.swift in Sources */,
-				94637C9F1CB7396400FA06E6 /* MoodButton.swift in Sources */,
+				94637C9F1CB7396400FA06E6 /* NavigationButton.swift in Sources */,
+				9474972D1CB89E86008C5AB2 /* UIBezierPath.swift in Sources */,
 				9438056D1CB402AA0085917E /* AppDelegate.swift in Sources */,
 				94D265FF1CB743550091EDA6 /* Match.swift in Sources */,
 				94AB43C41CB4064A006EBDA6 /* PrimitivesScene.swift in Sources */,
