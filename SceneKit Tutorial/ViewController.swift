@@ -12,10 +12,16 @@ import AVKit
 import AVFoundation
 import SpriteKit
 import Cartography
+import Alamofire
+import SwiftyJSON
+import RealmSwift
 
 class ViewController: UIViewController {
     
     let globals = Globals()
+    
+    let debugSphere = SCNSphere(radius: 1.0)
+    var positionDebugger:(light: Bool, node: SCNNode)?
     
     let screenSize:CGRect = UIScreen.mainScreen().bounds
     let masterView = UIView();
@@ -33,9 +39,14 @@ class ViewController: UIViewController {
     let mainAmbientLight = SCNLight()
     let moodAmbientLight = SCNLight()
     let sunLight = SCNLight()
+    var secondaryLightNode = SCNNode()
+    let secondaryLight = SCNLight()
     let sunParticleSystem = SCNParticleSystem()
     
+    var videoNode:SKVideoNode?
+    var screenNode: SCNNode?
     var player: AVPlayer?
+    var screen = SCNPlane()
     
     var universeNode: SCNNode = SCNNode() // All Geometry
     var currentUniverseXAngle: Float = 0.0
@@ -52,8 +63,14 @@ class ViewController: UIViewController {
     
     let controlBooth = UIView()
     
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        let color = UIColor.whiteColor()
+        debugSphere.firstMaterial?.diffuse.contents = color
+//        positionDebugger = (true, secondaryLightNode)
         
         buildFakeData()
         
@@ -61,11 +78,11 @@ class ViewController: UIViewController {
         
         buildSceneView()
         
+        buildCamera()
+        
         buildVideo()
         
         buildGalaxy()
-        
-        buildCamera()
         
         buildFloor()
         
@@ -73,7 +90,52 @@ class ViewController: UIViewController {
         
         buildControls()
         
+        // Use them like regular Swift objects
         
+
+        let realm = try! Realm()
+        let firstMatch = realm.objects(Match).filter("id == 'fb0daf99-dd19-4205-9186-549adabcd13f'")
+        
+        print(firstMatch)
+        
+        
+
+        // Get the default Realm
+        
+        let networking = Networking();
+        networking.makeRequest(
+            "stats/h5/players/dolbex/matches",
+            method: .GET,
+            data: nil,
+            success: { (json: JSON) -> Void in
+                
+                let realm = try! Realm()
+                
+                for (_,subJson):(String, JSON) in json["Results"] {
+                    let match = Match()
+                    
+                    if let id = subJson["Id"]["MatchId"].string {
+                        match.id = id
+                    }
+                    
+                    if let mapId = subJson["MapId"].string {
+                        match.map = mapId
+                    }
+                    
+                    if let rank = subJson["Players"][0]["Rank"].int {
+                        match.rank = rank
+                    }
+                    
+                    // Persist your data easily
+                    try! realm.write {
+                        realm.add(match, update: true)
+                    }
+                }
+            },
+            error: { (errorCode: Int, message: String) -> Void in
+                print(message)
+            }
+        )
         
     }
     
@@ -114,39 +176,28 @@ class ViewController: UIViewController {
         player = AVPlayer(URL: videoURL)
         player?.actionAtItemEnd = .None
         player?.muted = true
-        player?.play()
 //        player?.rate = 0.2
         
-        let videoWidth = 3840
-        let videoHeight = 720
+        let videoWidth = 480
+        let videoHeight = 270
         
-        let videoNode:SKVideoNode = SKVideoNode(AVPlayer: player!)
+        videoNode = SKVideoNode(AVPlayer: player!)
         let spritescene = SKScene(size: CGSize(width: videoWidth, height: videoHeight))
-        videoNode.position = CGPointMake(spritescene.size.width/2, spritescene.size.height/2)
-        videoNode.size.width = spritescene.size.width
-        videoNode.size.height = spritescene.size.height
-        videoNode.xScale = 1.0
-        videoNode.yScale = -1.0
-        spritescene.addChild(videoNode)
+        videoNode!.position = CGPointMake(spritescene.size.width/2, spritescene.size.height/2)
+        videoNode!.size.width = spritescene.size.width
+        videoNode!.size.height = spritescene.size.height
+        videoNode!.xScale = 1.0
+        videoNode!.yScale = -1.0
+        spritescene.addChild(videoNode!)
         
         // assign SKScene-embedded video to screen geometry
-        let screen = SCNPlane()
         screen.width = 80
         screen.height = 45
         screen.firstMaterial?.diffuse.contents  = spritescene
-//        screen.firstMaterial?.multiply.contents = spritescene
-        let screenNode = SCNNode(geometry: screen)
-        screenNode.position = SCNVector3(x: centerOfTheUniverse.x, y: centerOfTheUniverse.y, z: centerOfTheUniverse.z - Float(maximumCircumference) - 0.8)
+        screenNode = SCNNode(geometry: screen)
+        screenNode!.position = SCNVector3(x: centerOfTheUniverse.x, y: centerOfTheUniverse.y, z: centerOfTheUniverse.z - Float(maximumCircumference) - 0.8)
         
-//        let screenLight = SCNLight()
-//        screenLight.type = SCNLightTypeOmni
-//        screenLight.color = UIColor.whiteColor()
-//        screenLight.castsShadow = true
-//        screenLight.attenuationStartDistance = 5
-//        screenLight.attenuationEndDistance = 8
-//        screenNode.light = screenLight
-        
-        sceneView.scene?.rootNode.addChildNode(screenNode)
+        sceneView.scene?.rootNode.addChildNode(screenNode!)
         
         //loop video
         NSNotificationCenter.defaultCenter().addObserver(self,
@@ -162,12 +213,34 @@ class ViewController: UIViewController {
     
     func buildGalaxy() {
         // Build Galaxy
-        universeNode.position = SCNVector3(x: 0.0, y: 0.0, z: 4.0)
-        sceneView.scene?.rootNode.addChildNode(universeNode)
-        
         buildSun()
         
         buildRings()
+        
+        universeNode.position = SCNVector3(x: -7, y: 0.0, z: cameraNode.position.z - 25)
+        sceneView.scene?.rootNode.addChildNode(universeNode)
+        
+        
+    }
+    
+    func showGalaxy() {
+        SCNTransaction.begin()
+        SCNTransaction.setAnimationDuration(2.0)
+        
+        universeNode.scale = SCNVector3(x: 1, y: 1, z: 1)
+        universeNode.position = SCNVector3(x: -7, y: 0.0, z: cameraNode.position.z - 25)
+        
+        SCNTransaction.commit()
+    }
+    
+    func hideGalaxy() {
+        SCNTransaction.begin()
+        SCNTransaction.setAnimationDuration(0.5)
+        
+        universeNode.scale = SCNVector3(x: 0.4, y: 0.4, z: 0.4)
+        universeNode.position = SCNVector3(x: -24, y: 13, z: cameraNode.position.z - 30)
+        
+        SCNTransaction.commit()
     }
     
     func buildSun() {
@@ -187,7 +260,7 @@ class ViewController: UIViewController {
         sunLight.color = UIColor.whiteColor()
         sunLight.castsShadow = true
         sunLight.attenuationStartDistance = 8
-        sunLight.attenuationEndDistance = 12
+        sunLight.attenuationEndDistance = 100
         theSun.light = sunLight
         
         // Add particles to the sun
@@ -253,25 +326,26 @@ class ViewController: UIViewController {
         hideLineChart()
     }
     
-    func buildBarChart(data: Array<Stat>) {
+    func buildBarChart(data: Array<Stat>, averageOnly:Bool? = false) {
         
         for i in 0..<data.count {
             
-            let bar = SCNBox(width: 1, height: 0, length: 1, chamferRadius: 0.1);
+            if averageOnly != true {
+                let bar = SCNBox(width: 1, height: 0, length: 1, chamferRadius: 0.1);
+                bar.firstMaterial?.diffuse.contents = UIColor.lightGrayColor()
+                let barNode = SCNNode(geometry: bar)
+                barNode.position = SCNVector3(x: Float(i) * 1.75, y:0.0, z:0.0)
+                currentGraph.addChildNode(barNode)
+                barNodes.append(barNode)
+            }
+            
             let avgBar = SCNBox(width: 0.25, height: 0, length: 1, chamferRadius: 0.1);
-            bar.firstMaterial?.diffuse.contents = UIColor.lightGrayColor()
             avgBar.firstMaterial?.diffuse.contents = UIColor.redColor()
-            
-            let barNode = SCNNode(geometry: bar)
             let avgBarNode = SCNNode(geometry: avgBar)
-            barNode.position = SCNVector3(x: Float(i) * 1.75, y:0.0, z:0.0)
-            avgBarNode.position = SCNVector3(x: (Float(i) * 1.75) + 0.5, y:0.0, z:0.0)
-            
-            currentGraph.addChildNode(barNode)
+            avgBarNode.position = SCNVector3(x: (Float(i) * 1.75) + 0.5, y:0.0, z:-1)
             currentGraph.addChildNode(avgBarNode)
-            
-            barNodes.append(barNode)
             avgBarNodes.append(avgBarNode)
+            
         }
         
         currentGraph.position = SCNVector3(x:-30, y:-Float(maximumCircumference) - 0.8, z:centerOfTheUniverse.z - (Float(maximumCircumference) / 2))
@@ -282,17 +356,19 @@ class ViewController: UIViewController {
         SCNTransaction.setAnimationDuration(1.0)
         
             for i in 0..<data.count {
-                let height = data[i].amount
-                let avgHeight = data[i].average
                 
-                let amountNode = barNodes[i]
+                if averageOnly != true {
+                    let height = data[i].amount / 2
+                    let amountNode = barNodes[i]
+                    let box = amountNode.geometry as! SCNBox
+                    
+                    box.height = CGFloat(height)
+                    amountNode.position.y = height / 2
+                }
+                
+                let avgHeight = data[i].average / 2
                 let avgNode = avgBarNodes[i]
-                
-                let box = amountNode.geometry as! SCNBox
                 let avgBox = avgNode.geometry as! SCNBox
-                
-                box.height = CGFloat(height)
-                amountNode.position.y = height / 2
                 
                 avgBox.height = CGFloat(avgHeight)
                 avgNode.position.y = avgHeight / 2
@@ -338,22 +414,17 @@ class ViewController: UIViewController {
     func buildLineChart(data: Array<Stat>) {
         for i in 0..<data.count {
             
-            let point = SCNSphere(radius: 0.5)
-            let avgPoint = SCNSphere(radius: 0.2)
+            let point = SCNSphere(radius: 0.3)
             point.firstMaterial?.diffuse.contents = UIColor.lightGrayColor()
-            avgPoint.firstMaterial?.diffuse.contents = UIColor.redColor()
             
             let pointNode = SCNNode(geometry: point)
-            let avgPointNode = SCNNode(geometry: avgPoint)
             pointNode.position = SCNVector3(x: Float(i) * globals.lineGraphPointMargin, y:-Float(maximumCircumference) - 0.6, z:0.0)
-            avgPointNode.position = SCNVector3(x: (Float(i) * globals.lineGraphPointMargin) + 0.2, y:-Float(maximumCircumference) - 0.6, z:1.0)
             
             currentGraph.addChildNode(pointNode)
-            currentGraph.addChildNode(avgPointNode)
-            
             pointNodes.append(pointNode)
-            avgPointNodes.append(avgPointNode)
         }
+        
+        buildBarChart(data, averageOnly:true)
         
         // Add the line
         let line = SCNShape(path: buildLinePath(), extrusionDepth: 0.1)
@@ -366,22 +437,29 @@ class ViewController: UIViewController {
         currentGraph.position = SCNVector3(x:-30, y:-Float(maximumCircumference) - 0.8, z:centerOfTheUniverse.z - (Float(maximumCircumference) / 2))
         sceneView.scene!.rootNode.addChildNode(currentGraph)
         
+        // Shader for the line on the graph to prep for fade in
+        let modifier = "uniform float progress;\n #pragma transparent\n vec4 mPos = u_inverseModelViewTransform * vec4(_surface.position, 1.0);\n _surface.transparent.a = clamp(1.0 - ((mPos.x + 50.0) - progress * 200.0) / 50.0, 0.0, 1.0);"
+        line.shaderModifiers = [ SCNShaderModifierEntryPointSurface: modifier ]
+        line.setValue(0.0, forKey: "progress")
+        
         
         SCNTransaction.begin()
-        SCNTransaction.setAnimationDuration(1.0)
+        SCNTransaction.setAnimationDuration(2.0)
         
         for i in 0..<data.count {
             let height = data[i].amount
-            let avgHeight = data[i].average
-            
             let amountNode = pointNodes[i]
-            let avgNode = avgPointNodes[i]
-            
-//            let point = amountNode.geometry as! SCNSphere
-//            let avgPoint = avgNode.geometry as! SCNSphere
             
             amountNode.position.y = height / 2
-            avgNode.position.y = avgHeight / 2
+        }
+        
+        SCNTransaction.setCompletionBlock {
+            
+            // Progress the Shader on the line
+            SCNTransaction.begin()
+            SCNTransaction.setAnimationDuration(10.0)
+                line.setValue(1.0, forKey: "progress")
+            SCNTransaction.commit()
         }
         
         SCNTransaction.commit()
@@ -428,17 +506,17 @@ class ViewController: UIViewController {
         var interpolationPoints : [CGPoint] = [CGPoint]()
         
         for i in 0..<fakeData.count {
-            let pathPointX = i * Int(globals.lineGraphPointMargin)
-            let pathPointY = fakeData[i].amount
+            let pathPointX:CGFloat = CGFloat(i) * CGFloat(globals.lineGraphPointMargin)
+            let pathPointY:CGFloat = (CGFloat(fakeData[i].amount) / 2) + 0.25
             
-            interpolationPoints.append(CGPoint(x: pathPointX,y: Int(pathPointY)))
+            interpolationPoints.append(CGPoint(x: pathPointX,y: pathPointY))
         }
         
         for i in (0..<fakeData.count).reverse() {
-            let pathPointX = i * Int(globals.lineGraphPointMargin)
-            let pathPointY = (fakeData[i].amount - 2)
+            let pathPointX:CGFloat = CGFloat(i) * CGFloat(globals.lineGraphPointMargin)
+            let pathPointY:CGFloat = ((CGFloat(fakeData[i].amount) / 2) - 0.25)
             
-            interpolationPoints.append(CGPoint(x: pathPointX,y: Int(pathPointY)))
+            interpolationPoints.append(CGPoint(x: pathPointX, y: pathPointY))
         }
         
         path.interpolatePointsWithHermite(interpolationPoints)
@@ -504,7 +582,6 @@ class ViewController: UIViewController {
         var newAngleX = (Float)(translation.y)*(Float)(M_PI)/180.0
         var newAngleY = (Float)(translation.x)*(Float)(M_PI)/180.0
         
-        
         // Rotate Universe
         newAngleX += currentUniverseXAngle
         newAngleY += currentUniverseYAngle
@@ -518,9 +595,13 @@ class ViewController: UIViewController {
         }
         
         // Pan Graph
-        print(currentGraph.position.x, translation.x)
-        if ((currentGraph.position.x > -50 && translation.x < 0) || (currentGraph.position.x < 20 && translation.x > 0)) {
+        if ((currentGraph.position.x > -50 && translation.x < 0) || (currentGraph.position.x < -10 && translation.x > 0)) {
             currentGraph.position.x += Float(translation.x * 0.01)
+        }
+        
+        if (positionDebugger != nil) {
+            positionDebugger?.node.position.x += Float(translation.x * 0.05)
+            print(positionDebugger?.node.position)
         }
     }
     
@@ -535,6 +616,24 @@ class ViewController: UIViewController {
             }
         } else {
             universeNode.position.z *= Float(translation)
+        }
+        
+        if (positionDebugger != nil) {
+            if translation > 1 {
+                let newZ = (positionDebugger?.node.position.z)! + (Float(translation) * 0.08)
+                
+                if newZ < maxZoom {
+                    positionDebugger?.node.position.z = newZ
+                }
+            } else {
+                let newZ = (positionDebugger?.node.position.z)! - (Float(translation) * 0.08)
+                
+                if newZ < maxZoom {
+                    positionDebugger?.node.position.z = newZ
+                }
+            }
+            
+            print(positionDebugger?.node.position.z)
         }
     }
     
@@ -597,6 +696,19 @@ class ViewController: UIViewController {
         moodAmbientLightNode.light = moodAmbientLight
         
         sceneView.scene?.rootNode.addChildNode(moodAmbientLightNode)
+        
+        
+        // Build out the lighting for the sun
+        secondaryLight.type = SCNLightTypeOmni
+        secondaryLight.color = UIColor.init(hex: 0x1e99d3)
+        secondaryLight.castsShadow = true
+        secondaryLight.attenuationStartDistance = 8
+        secondaryLight.attenuationEndDistance = 200
+    
+        secondaryLightNode = SCNNode()
+        secondaryLightNode.light = secondaryLight
+        secondaryLightNode.position = SCNVector3Make(24, -3, 1)
+        sceneView.scene?.rootNode.addChildNode(secondaryLightNode)
     }
     
     
@@ -616,10 +728,14 @@ class ViewController: UIViewController {
         
         if action == "home" {
             hideAllCharts()
+            showGalaxy()
         } else if action == "barChart" {
+            hideLineChart()
             buildBarChart(fakeData)
+            hideGalaxy()
         } else if action == "lineChart" {
             buildLineChart(fakeData)
+            hideGalaxy()
         }
     }
     
@@ -629,9 +745,9 @@ class ViewController: UIViewController {
         var moodColor = UIColor.blackColor()
         
         if mood == "bad" {
-            mainColor = UIColor.darkGrayColor()
+            mainColor = UIColor.whiteColor()
             sunColor = UIColor.redColor()
-            moodColor = UIColor.redColor()
+            moodColor = UIColor.init(hex: 0x680000, alpha: 1)
 
         } else if mood == "good" {
             mainColor = UIColor.whiteColor()

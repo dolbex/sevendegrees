@@ -19,4 +19,8 @@ class Globals {
     // Line graph
     let lineGraphPointMargin:Float = 2
     
+    // Networking
+    let baseApiUrl = "https://www.haloapi.com/"
+    let apiKey = "688e0e367c184514a6068b62e061cbf5"
+    
 }

@@ -11,8 +11,12 @@ import RealmSwift
 
 class Match: Object {
     
-    dynamic var rank: String = ""
+    dynamic var id: String = ""
+    dynamic var rank: Int = 0
     dynamic var map: String = ""
     dynamic var dnf: Bool = false
     
+    override static func primaryKey() -> String? {
+        return "id"
+    }
 }

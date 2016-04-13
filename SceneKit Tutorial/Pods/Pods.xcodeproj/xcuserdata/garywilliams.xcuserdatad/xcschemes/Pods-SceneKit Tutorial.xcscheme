@@ -14,7 +14,7 @@
             buildForArchiving = "YES">
             <BuildableReference
                BuildableIdentifier = 'primary'
-               BlueprintIdentifier = '7FE1695599E3937C8C9DDAF8'
+               BlueprintIdentifier = 'DE127D5C685F34D0DF7A9FDA'
                BlueprintName = 'Pods-SceneKit Tutorial'
                ReferencedContainer = 'container:Pods.xcodeproj'
                BuildableName = 'Pods_SceneKit_Tutorial.framework'>

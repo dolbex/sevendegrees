@@ -5,4 +5,5 @@ target 'SceneKit Tutorial' do
   pod 'SwiftyJSON'
   pod 'Cartography'
   pod 'RealmSwift'
+  pod 'Alamofire'
 end
