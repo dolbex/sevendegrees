@@ -61,7 +61,9 @@ class ViewController: UIViewController {
     var pointNodes:Array<SCNNode> = []
     var avgPointNodes:Array<SCNNode> = []
     
-    let controlBooth = UIView()
+    let controlBooth = UIView(frame: CGRect(x: 0, y: 0, width: 200, height: 300))
+    
+    let hud = UIImageView()
     
     
     
@@ -78,6 +80,8 @@ class ViewController: UIViewController {
         
         buildSceneView()
         
+        
+        
         buildCamera()
         
         buildVideo()
@@ -90,23 +94,49 @@ class ViewController: UIViewController {
         
         buildControls()
         
+        buildHud()
+        
         // Use them like regular Swift objects
         
 
-        let realm = try! Realm()
-        let firstMatch = realm.objects(Match).filter("id == 'fb0daf99-dd19-4205-9186-549adabcd13f'")
-        
-        print(firstMatch)
-        
-        
-
-        // Get the default Realm
         
         let networking = Networking();
+        
+        networking.makeRequest(
+            "metadata/h5/metadata/team-colors",
+            success: { (json: JSON) -> Void in
+                
+                let realm = try! Realm()
+                
+                for (_,team):(String, JSON) in json {
+                    let teamColor = TeamColor()
+                    teamColor.id = team["id"].intValue
+                    
+                    let color = team["color"].stringValue
+                    let index1 = color.startIndex.advancedBy(1)
+                    let colorWithoutHash = color.substringToIndex(index1)
+                    
+                    teamColor.color = colorWithoutHash
+                    
+                    teamColor.iconUrl = team["iconUrl"].stringValue
+                    teamColor.name = team["name"].stringValue
+                    
+                    // Persist your data easily
+                    try! realm.write {
+                        realm.add(teamColor, update: true)
+                    }
+                }
+            },
+            error: { (errorCode: Int, message: String) -> Void in
+                print(message)
+            }
+        )
+        
+        
+        // Gets latest matches and parses the data into Realm 
+        // objects. This includes matches, team
         networking.makeRequest(
             "stats/h5/players/dolbex/matches",
-            method: .GET,
-            data: nil,
             success: { (json: JSON) -> Void in
                 
                 let realm = try! Realm()
@@ -124,6 +154,22 @@ class ViewController: UIViewController {
                     
                     if let rank = subJson["Players"][0]["Rank"].int {
                         match.rank = rank
+                    }
+                    
+                    if let isTeamGame = subJson["isTeamGame"].bool {
+                        match.isTeamGame = isTeamGame
+                        
+                        if isTeamGame {
+                            if let teams = subJson["Teams"].array {
+                                for t in teams {
+                                    let team = Team()
+                                    team.id = "\(match.id)-\(t["id"].string)"
+                                    team.rank = t["rank"].intValue
+                                    team.score = t["score"].intValue
+                                    team.teamId = t["id"].intValue
+                                }
+                            }
+                        }
                     }
                     
                     // Persist your data easily
@@ -308,6 +354,20 @@ class ViewController: UIViewController {
         addSceneGestureRecognizers()
     }
     
+    func buildTeamColorData() {
+        let realm = try! Realm()
+        
+        let teamColors = realm.objects(TeamColor)
+        
+        for team in teamColors {
+            let stat:Stat = Stat()
+            stat.name = team.name
+            
+//            let averages = realm.objects(Match).filter(')
+            
+        }
+    }
+    
     func buildFakeData() {
         
         for i in 0...30 {
@@ -340,7 +400,8 @@ class ViewController: UIViewController {
             }
             
             let avgBar = SCNBox(width: 0.25, height: 0, length: 1, chamferRadius: 0.1);
-            avgBar.firstMaterial?.diffuse.contents = UIColor.redColor()
+            avgBar.firstMaterial?.diffuse.contents = UIColor(red:0.91, green:0.91, blue:0.09, alpha:1.00)
+            avgBar.firstMaterial?.selfIllumination.contents =  UIColor(red:0.91, green:0.91, blue:0.09, alpha:1.00)
             let avgBarNode = SCNNode(geometry: avgBar)
             avgBarNode.position = SCNVector3(x: (Float(i) * 1.75) + 0.5, y:0.0, z:-1)
             currentGraph.addChildNode(avgBarNode)
@@ -637,6 +698,18 @@ class ViewController: UIViewController {
         }
     }
     
+    func buildHud() {
+        let hudImage = UIImage(named: "hud")
+        hud.image = hudImage
+        
+        self.view.addSubview(hud)
+        
+        constrain(hud) { hud in
+            hud.edges == hud.superview!.edges
+        }
+        
+    }
+    
     func buildCamera() {
         // Add Camera
         cameraNode.camera = SCNCamera()
@@ -753,6 +826,10 @@ class ViewController: UIViewController {
             mainColor = UIColor.whiteColor()
             sunColor = UIColor.whiteColor()
             moodColor = UIColor.blackColor()
+        } else if mood == "excited" {
+            mainColor = UIColor.whiteColor()
+            sunColor = UIColor(red:0.91, green:0.91, blue:0.09, alpha:1.00) // Yellow
+            moodColor = UIColor(red:0.91, green:0.91, blue:0.09, alpha:0.3) // Yellow
         }
         
         SCNTransaction.begin()
@@ -770,16 +847,16 @@ class ViewController: UIViewController {
     
     func buildControls() {
         
-        controlBooth.backgroundColor = globals.blue
+        controlBooth.backgroundColor = UIColor.clearColor()
         controlBooth.alpha = 0.5
         
         self.view.addSubview(controlBooth)
         
         constrain(controlBooth) { controls in
-            controls.right == controls.superview!.right
-            controls.top == controls.superview!.top
-            controls.bottom == controls.superview!.bottom
-            controls.width == controls.superview!.width * 0.25
+            controls.left == controls.superview!.left
+            controls.top == controls.superview!.top + 20
+            controls.width == controls.superview!.width * 0.5
+            controls.height == 300
         }
         
         let shimView = UIView()
@@ -790,12 +867,18 @@ class ViewController: UIViewController {
         }
         
         let matchesButton = buildControl(shimView, title: "Home", mood: "good", action: "home")
-        let killsButton = buildControl(matchesButton, title: "Bar Graph", mood: "bad", action: "barChart")
+        let killsButton = buildControl(matchesButton, title: "Bar Graph", mood: "excited", action: "barChart")
         let _ = buildControl(killsButton, title: "Line Graph", mood: "bad", action: "lineChart")
+        
+        var pespectiveTransform = CATransform3DIdentity
+        pespectiveTransform.m34 = 1.0 / -500
+        pespectiveTransform = CATransform3DRotate(pespectiveTransform, CGFloat(10 * M_PI / 180), 0, 1, 0)
+//        rotationAndPerspectiveTransform = CATransform3DRotate(rotationAndPerspectiveTransform, 45.0 * CGFloat(M_PI), 0.0, 1.0, 0.0)
+        controlBooth.layer.transform = pespectiveTransform
     }
     
     func buildControl(previousEl: UIView, title: String, mood: String, action: String) -> UIButton {
-        let button = Buttons.primaryButton(title, font: UIFont.systemFontOfSize(16, weight: UIFontWeightLight))
+        let button = Buttons.primaryButton(title, font: UIFont.systemFontOfSize(12, weight: UIFontWeightLight))
         button.mood = mood
         button.action = action
         button.addTarget(self, action: #selector(self.navigate), forControlEvents: .TouchUpInside)

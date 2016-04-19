@@ -48,16 +48,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     {
         if(UIDeviceOrientationIsLandscape(UIDevice.currentDevice().orientation))
         {
-            print("landscape")
+            
         }
         
         if(UIDeviceOrientationIsPortrait(UIDevice.currentDevice().orientation))
         {
-            print("Portrait")
-        }
         
+        }
     }
-
-
 }
 

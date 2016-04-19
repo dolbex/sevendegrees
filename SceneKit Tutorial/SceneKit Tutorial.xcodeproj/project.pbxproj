@@ -11,6 +11,8 @@
 		941570DF1CB5BA4000C5A6F3 /* h4-opener.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 941570DD1CB5BA3F00C5A6F3 /* h4-opener.mp4 */; };
 		941570E01CB5BA4000C5A6F3 /* h5-announcement.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 941570DE1CB5BA4000C5A6F3 /* h5-announcement.mp4 */; };
 		9432D7601CBDC426003B0003 /* Networking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9432D75F1CBDC426003B0003 /* Networking.swift */; };
+		9432D7621CBE5649003B0003 /* Team.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9432D7611CBE5649003B0003 /* Team.swift */; };
+		9432D7641CBE57F9003B0003 /* TeamColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9432D7631CBE57F9003B0003 /* TeamColor.swift */; };
 		9438056D1CB402AA0085917E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9438056C1CB402AA0085917E /* AppDelegate.swift */; };
 		943805721CB402AA0085917E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 943805701CB402AA0085917E /* Main.storyboard */; };
 		943805741CB402AA0085917E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 943805731CB402AA0085917E /* Assets.xcassets */; };
@@ -18,6 +20,7 @@
 		943805821CB402AA0085917E /* SceneKit_TutorialTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943805811CB402AA0085917E /* SceneKit_TutorialTests.swift */; };
 		9438058D1CB402AB0085917E /* SceneKit_TutorialUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9438058C1CB402AB0085917E /* SceneKit_TutorialUITests.swift */; };
 		9438059B1CB402D00085917E /* SceneKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9438059A1CB402D00085917E /* SceneKit.framework */; };
+		945589A11CC42E2D00138A9C /* hud in Resources */ = {isa = PBXBuildFile; fileRef = 945589A01CC42E2D00138A9C /* hud */; };
 		94637C9A1CB7322700FA06E6 /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94637C991CB7322700FA06E6 /* Globals.swift */; };
 		94637C9C1CB7351400FA06E6 /* Buttons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94637C9B1CB7351400FA06E6 /* Buttons.swift */; };
 		94637C9F1CB7396400FA06E6 /* NavigationButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94637C9E1CB7396400FA06E6 /* NavigationButton.swift */; };
@@ -57,6 +60,8 @@
 		941570DD1CB5BA3F00C5A6F3 /* h4-opener.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; name = "h4-opener.mp4"; path = "videos/h4-opener.mp4"; sourceTree = "<group>"; };
 		941570DE1CB5BA4000C5A6F3 /* h5-announcement.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; name = "h5-announcement.mp4"; path = "videos/h5-announcement.mp4"; sourceTree = "<group>"; };
 		9432D75F1CBDC426003B0003 /* Networking.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Networking.swift; sourceTree = "<group>"; };
+		9432D7611CBE5649003B0003 /* Team.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Team.swift; sourceTree = "<group>"; };
+		9432D7631CBE57F9003B0003 /* TeamColor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TeamColor.swift; sourceTree = "<group>"; };
 		943805691CB402AA0085917E /* SceneKit Tutorial.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "SceneKit Tutorial.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9438056C1CB402AA0085917E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		943805711CB402AA0085917E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -70,6 +75,7 @@
 		9438058C1CB402AB0085917E /* SceneKit_TutorialUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneKit_TutorialUITests.swift; sourceTree = "<group>"; };
 		9438058E1CB402AB0085917E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9438059A1CB402D00085917E /* SceneKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SceneKit.framework; path = System/Library/Frameworks/SceneKit.framework; sourceTree = SDKROOT; };
+		945589A01CC42E2D00138A9C /* hud */ = {isa = PBXFileReference; lastKnownFileType = file; name = hud; path = "SceneKit Tutorial/hud"; sourceTree = "<group>"; };
 		94637C991CB7322700FA06E6 /* Globals.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
 		94637C9B1CB7351400FA06E6 /* Buttons.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Buttons.swift; sourceTree = "<group>"; };
 		94637C9E1CB7396400FA06E6 /* NavigationButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NavigationButton.swift; sourceTree = "<group>"; };
@@ -150,6 +156,7 @@
 			children = (
 				941570DD1CB5BA3F00C5A6F3 /* h4-opener.mp4 */,
 				941570DE1CB5BA4000C5A6F3 /* h5-announcement.mp4 */,
+				945589A01CC42E2D00138A9C /* hud */,
 				94BEE6C81CB6FDDF0022EA5B /* Terrestrial1-specular.jpg */,
 				94BEE6C61CB6F82D0022EA5B /* Terrestrial1.png */,
 				9438059A1CB402D00085917E /* SceneKit.framework */,
@@ -245,6 +252,8 @@
 			isa = PBXGroup;
 			children = (
 				94D265FE1CB743550091EDA6 /* Match.swift */,
+				9432D7611CBE5649003B0003 /* Team.swift */,
+				9432D7631CBE57F9003B0003 /* TeamColor.swift */,
 			);
 			name = Models;
 			path = ..;
@@ -358,6 +367,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				94C0D0FA1CB487E50091892D /* spark.png in Resources */,
+				945589A11CC42E2D00138A9C /* hud in Resources */,
 				943805771CB402AA0085917E /* LaunchScreen.storyboard in Resources */,
 				941570E01CB5BA4000C5A6F3 /* h5-announcement.mp4 in Resources */,
 				941570DF1CB5BA4000C5A6F3 /* h4-opener.mp4 in Resources */,
@@ -440,8 +450,10 @@
 			files = (
 				94D266011CB7D38E0091EDA6 /* Stat.swift in Sources */,
 				94AB43C21CB405FB006EBDA6 /* ViewController.swift in Sources */,
+				9432D7621CBE5649003B0003 /* Team.swift in Sources */,
 				94637C9F1CB7396400FA06E6 /* NavigationButton.swift in Sources */,
 				9432D7601CBDC426003B0003 /* Networking.swift in Sources */,
+				9432D7641CBE57F9003B0003 /* TeamColor.swift in Sources */,
 				9474972D1CB89E86008C5AB2 /* UIBezierPath.swift in Sources */,
 				9438056D1CB402AA0085917E /* AppDelegate.swift in Sources */,
 				94D265FF1CB743550091EDA6 /* Match.swift in Sources */,
